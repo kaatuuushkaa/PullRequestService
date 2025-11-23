@@ -43,6 +43,114 @@
 - периодически вызываются `GET /users/getReview` и `GET /stats`
 <img width="713" height="466" alt="image" src="https://github.com/user-attachments/assets/b3d425ac-0645-4029-a750-afbee2f9b23e" />
 
+## Mассовая деактивация пользователей команды
+Операция деактивирует указанных пользователей и корректно обновляет открые PR
+Примеры запросов:
+1. Успешная массовая деактивация
+Request
+```
+curl -X POST http://localhost:8080/users/deactivate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "team_name": "backend",
+    "user_ids": ["u2", "u3", "u5"]
+  }'
+```
+
+Response (200)
+```
+{
+  "team_name": "backend",
+  "deactivated_count": 3,
+  "affected_pr_count": 4,
+  "reassigned_reviewers_count": 3
+}
+```
+2. Частичная деактивация (например, часть id не существует)
+Request
+```
+curl -X POST http://localhost:8080/users/deactivate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "team_name": "backend",
+    "user_ids": ["u1", "u999", "u2"]
+  }'
+  ```
+Response(200)
+```
+{
+  "team_name": "backend",
+  "deactivated_count": 2,
+  "affected_pr_count": 1,
+  "reassigned_reviewers_count": 1
+}
+```
+3. Команда не найдена
+Request
+```
+curl -X POST http://localhost:8080/users/deactivate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "team_name": "unknown_team",
+    "user_ids": ["u1", "u2"]
+  }'
+  ```
+Response(404)
+```
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "team not found"
+  }
+}
+```
+4. Пустой список пользователей
+Request
+```
+curl -X POST http://localhost:8080/users/deactivate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "team_name": "backend",
+    "user_ids": []
+  }'
+  ```
+Response(400)
+```
+{
+  "error": {
+    "code": "BAD_REQUEST",
+    "message": "team_name and user_ids are required"
+  }
+}
+```
+5. Успешно, но никто не был ревьюером
+Request
+```
+curl -X POST http://localhost:8080/users/deactivate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "team_name": "backend",
+    "user_ids": ["u7"]
+  }'
+  ```
+Response(200)
+```
+{
+  "team_name": "backend",
+  "deactivated_count": 1,
+  "affected_pr_count": 0,
+  "reassigned_reviewers_count": 0
+}
+```
+
+
+
+
+
+
+
+
+
 
 
 
