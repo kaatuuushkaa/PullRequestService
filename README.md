@@ -35,4 +35,14 @@
 - misspell - проверка опечатки в строках и комментариях
 - gofmt - следит за стилем
 
+## LoadTest
+Для нагрузочного тестирования добавлен loadtest/test.go.
+Запускаем после `docker-compose up` с помощью `make load-test`
+- один раз создается команда `payments` с 5 активными пользователями (`POST /team/add`)
+- в несколько потоков создаются PR (`POST /pullRequest/create`)
+- периодически вызываются `GET /users/getReview` и `GET /stats`
+<img width="713" height="466" alt="image" src="https://github.com/user-attachments/assets/b3d425ac-0645-4029-a750-afbee2f9b23e" />
+
+
+
 
