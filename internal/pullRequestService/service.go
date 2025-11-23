@@ -3,10 +3,8 @@ package pullRequestService
 import (
 	"PullRequestService/domain"
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -59,15 +57,10 @@ func (s *pullRequestService) CreatePR(prID, prName, authorID string) (domain.Pul
 		reviewers = reviewers[:2]
 	}
 
-	authorIDInt, err := strconv.Atoi(author.ID)
-	if err != nil {
-		return domain.PullRequest{}, fmt.Errorf("invalid author ID: %w", err)
-	}
-
 	pr := domain.PullRequest{
 		ID:                prID,
 		Name:              prName,
-		AuthorID:          authorIDInt,
+		AuthorID:          author.ID,
 		Status:            "OPEN",
 		AssignedReviewers: reviewers,
 		CreatedAt:         time.Now(),

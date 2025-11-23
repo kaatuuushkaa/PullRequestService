@@ -3,7 +3,6 @@ package pullRequestService
 import (
 	"PullRequestService/domain"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type PullRequestRepository interface {
@@ -57,10 +56,9 @@ func (r *pullRequestRepository) UpdatePR(pr domain.PullRequest) error {
 	}
 
 	for _, u := range pr.AssignedReviewers {
-		reviewerIDInt, _ := strconv.Atoi(u.ID)
 		reviewer := domain.PullRequestReviewer{
 			PullRequestID: pr.ID,
-			ReviewerID:    reviewerIDInt,
+			ReviewerID:    u.ID,
 		}
 		if err := r.db.Create(&reviewer).Error; err != nil {
 			return err

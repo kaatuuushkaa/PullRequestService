@@ -5,7 +5,6 @@ import (
 	"PullRequestService/internal/web/pullRequests"
 	"context"
 	"errors"
-	"strconv"
 )
 
 type PullRequestHandler struct {
@@ -61,7 +60,7 @@ func (p *PullRequestHandler) PostPullRequestCreate(ctx context.Context, request 
 		Pr: &pullRequests.PullRequest{
 			PullRequestId:     pr.ID,
 			PullRequestName:   pr.Name,
-			AuthorId:          strconv.Itoa(pr.AuthorID),
+			AuthorId:          pr.AuthorID,
 			Status:            pullRequests.OPEN,
 			AssignedReviewers: reviewerIDs,
 			CreatedAt:         &pr.CreatedAt,
@@ -101,7 +100,7 @@ func (p *PullRequestHandler) PostPullRequestMerge(ctx context.Context, request p
 		Pr: &pullRequests.PullRequest{
 			PullRequestId:     pr.ID,
 			PullRequestName:   pr.Name,
-			AuthorId:          strconv.Itoa(pr.AuthorID),
+			AuthorId:          pr.AuthorID,
 			Status:            pullRequests.MERGED,
 			AssignedReviewers: reviewerIDs,
 			CreatedAt:         &pr.CreatedAt,
@@ -173,7 +172,7 @@ func (p *PullRequestHandler) PostPullRequestReassign(ctx context.Context, reques
 		Pr: pullRequests.PullRequest{
 			PullRequestId:     newPR.ID,
 			PullRequestName:   newPR.Name,
-			AuthorId:          strconv.Itoa(newPR.AuthorID),
+			AuthorId:          newPR.AuthorID,
 			Status:            pullRequests.PullRequestStatus(newPR.Status),
 			AssignedReviewers: reviewerIDs,
 			CreatedAt:         &newPR.CreatedAt,

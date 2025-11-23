@@ -5,7 +5,6 @@ import (
 	"PullRequestService/internal/web/users"
 	"context"
 	"errors"
-	"strconv"
 )
 
 type UserHandler struct {
@@ -36,7 +35,7 @@ func (u *UserHandler) GetUsersGetReview(ctx context.Context, request users.GetUs
 		shortPRs = append(shortPRs, users.PullRequestShort{
 			PullRequestId:   pr.ID,
 			PullRequestName: pr.Name,
-			AuthorId:        strconv.Itoa(pr.AuthorID),
+			AuthorId:        pr.AuthorID,
 			Status:          users.PullRequestShortStatus(pr.Status),
 		})
 	}

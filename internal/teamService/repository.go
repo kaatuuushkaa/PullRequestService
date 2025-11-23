@@ -2,7 +2,6 @@ package teamService
 
 import (
 	"PullRequestService/domain"
-	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -23,13 +22,11 @@ func (t *teamRepository) GetTeam(teamName string) (domain.Team, error) {
 	var team domain.Team
 	err := t.db.First(&team, "name = ?", teamName).Error
 	if err != nil {
-		fmt.Println(err)
 		return domain.Team{}, err
 	}
 	var members []domain.User
 	err = t.db.Where("team_name = ?", teamName).Find(&members).Error
 	if err != nil {
-		fmt.Println(err)
 		return domain.Team{}, err
 	}
 
@@ -41,7 +38,6 @@ func (t *teamRepository) GetTeam(teamName string) (domain.Team, error) {
 func (t *teamRepository) PostTeam(team domain.Team) error {
 	err := t.db.Create(&team).Error
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 

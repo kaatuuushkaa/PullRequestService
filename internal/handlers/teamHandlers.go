@@ -5,6 +5,7 @@ import (
 	"PullRequestService/internal/teamService"
 	"PullRequestService/internal/web/teams"
 	"context"
+	"fmt"
 )
 
 type TeamHandler struct {
@@ -75,7 +76,7 @@ func (t *TeamHandler) PostTeamAdd(ctx context.Context, request teams.PostTeamAdd
 				Message string                       `json:"message"`
 			}{
 				Code:    teams.TEAMEXISTS,
-				Message: "team_name already exists",
+				Message: fmt.Sprintf("%s already exists", team.Name),
 			},
 		}, nil
 	}

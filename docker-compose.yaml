@@ -29,5 +29,19 @@ services:
       timeout: 5s
       retries: 5
 
+  migrate:
+    image: migrate/migrate:4
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations
+    command: [
+      "-path=/migrations",
+      "-database", "postgres://postgres:yourpassword@postgres:5432/postgres?sslmode=disable",
+      "up"
+    ]
+    restart: "on-failure"
+
 volumes:
   postgres_data:

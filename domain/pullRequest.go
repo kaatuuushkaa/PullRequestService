@@ -7,7 +7,7 @@ import (
 type PullRequest struct {
 	ID                string     `gorm:"column:pull_request_id;primaryKey"`
 	Name              string     `gorm:"column:pull_request_name"`
-	AuthorID          int        `gorm:"column:author_id"`
+	AuthorID          string     `gorm:"column:author_id"`
 	Status            string     `gorm:"column:status"`
 	AssignedReviewers []User     `gorm:"many2many:pull_request_reviewers;joinForeignKey:PullRequestID;joinReferences:ReviewerID"`
 	CreatedAt         time.Time  `gorm:"column:created_at"`
@@ -16,5 +16,5 @@ type PullRequest struct {
 
 type PullRequestReviewer struct {
 	PullRequestID string `gorm:"column:pull_request_id;primaryKey"`
-	ReviewerID    int    `gorm:"column:reviewer_id;primaryKey"`
+	ReviewerID    string `gorm:"column:reviewer_id;primaryKey"`
 }
