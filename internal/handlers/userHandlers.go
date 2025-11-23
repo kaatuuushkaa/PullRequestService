@@ -75,3 +75,34 @@ func (u *UserHandler) PostUsersSetIsActive(ctx context.Context, request users.Po
 	}, nil
 
 }
+
+func (u *UserHandler) PostUsersDeactivate(ctx context.Context, request users.PostUsersDeactivateRequestObject) (users.PostUsersDeactivateResponseObject, error) {
+	req := request.Body
+	if req == nil {
+		return nil, errors.New("invalid body")
+	}
+
+	result, err := u.service.DeactivateAndReassign(req.TeamName, req.UserIds)
+	if err != nil {
+
+		if err.Error() == "TEAM_NOT_FOUND" {
+			return users.PostUsersDeactivate404JSONResponse{
+				Error: struct {
+					Code    users.ErrorResponseErrorCode `json:"code"`
+					Message string                       `json:"message"`
+				}{
+					Code:    users.NOTFOUND,
+					Message: "team not found",
+				},
+			}, nil
+		}
+
+		return nil, err
+	}
+	return users.PostUsersDeactivate200JSONResponse{
+		TeamName:                 result.TeamName,
+		DeactivatedCount:         result.DeactivatedCount,
+		AffectedPrCount:          result.AffectedPRCount,
+		ReassignedReviewersCount: result.ReassignedReviewersCount,
+	}, nil
+}

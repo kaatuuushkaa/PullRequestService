@@ -63,6 +63,12 @@ type User struct {
 // UserIdQuery defines model for UserIdQuery.
 type UserIdQuery = string
 
+// PostUsersDeactivateJSONBody defines parameters for PostUsersDeactivate.
+type PostUsersDeactivateJSONBody struct {
+	TeamName string   `json:"team_name"`
+	UserIds  []string `json:"user_ids"`
+}
+
 // GetUsersGetReviewParams defines parameters for GetUsersGetReview.
 type GetUsersGetReviewParams struct {
 	// UserId Идентификатор пользователя
@@ -75,11 +81,17 @@ type PostUsersSetIsActiveJSONBody struct {
 	UserId   string `json:"user_id"`
 }
 
+// PostUsersDeactivateJSONRequestBody defines body for PostUsersDeactivate for application/json ContentType.
+type PostUsersDeactivateJSONRequestBody PostUsersDeactivateJSONBody
+
 // PostUsersSetIsActiveJSONRequestBody defines body for PostUsersSetIsActive for application/json ContentType.
 type PostUsersSetIsActiveJSONRequestBody PostUsersSetIsActiveJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Массово деактивировать пользователей команды и переназначить открытые PR
+	// (POST /users/deactivate)
+	PostUsersDeactivate(ctx echo.Context) error
 	// Получить PR'ы, где пользователь назначен ревьювером
 	// (GET /users/getReview)
 	GetUsersGetReview(ctx echo.Context, params GetUsersGetReviewParams) error
@@ -91,6 +103,15 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// PostUsersDeactivate converts echo context to params.
+func (w *ServerInterfaceWrapper) PostUsersDeactivate(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostUsersDeactivate(ctx)
+	return err
 }
 
 // GetUsersGetReview converts echo context to params.
@@ -148,9 +169,50 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.POST(baseURL+"/users/deactivate", wrapper.PostUsersDeactivate)
 	router.GET(baseURL+"/users/getReview", wrapper.GetUsersGetReview)
 	router.POST(baseURL+"/users/setIsActive", wrapper.PostUsersSetIsActive)
 
+}
+
+type PostUsersDeactivateRequestObject struct {
+	Body *PostUsersDeactivateJSONRequestBody
+}
+
+type PostUsersDeactivateResponseObject interface {
+	VisitPostUsersDeactivateResponse(w http.ResponseWriter) error
+}
+
+type PostUsersDeactivate200JSONResponse struct {
+	AffectedPrCount          int    `json:"affected_pr_count"`
+	DeactivatedCount         int    `json:"deactivated_count"`
+	ReassignedReviewersCount int    `json:"reassigned_reviewers_count"`
+	TeamName                 string `json:"team_name"`
+}
+
+func (response PostUsersDeactivate200JSONResponse) VisitPostUsersDeactivateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostUsersDeactivate400JSONResponse ErrorResponse
+
+func (response PostUsersDeactivate400JSONResponse) VisitPostUsersDeactivateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostUsersDeactivate404JSONResponse ErrorResponse
+
+func (response PostUsersDeactivate404JSONResponse) VisitPostUsersDeactivateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetUsersGetReviewRequestObject struct {
@@ -203,6 +265,9 @@ func (response PostUsersSetIsActive404JSONResponse) VisitPostUsersSetIsActiveRes
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+	// Массово деактивировать пользователей команды и переназначить открытые PR
+	// (POST /users/deactivate)
+	PostUsersDeactivate(ctx context.Context, request PostUsersDeactivateRequestObject) (PostUsersDeactivateResponseObject, error)
 	// Получить PR'ы, где пользователь назначен ревьювером
 	// (GET /users/getReview)
 	GetUsersGetReview(ctx context.Context, request GetUsersGetReviewRequestObject) (GetUsersGetReviewResponseObject, error)
@@ -221,6 +286,35 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
+}
+
+// PostUsersDeactivate operation middleware
+func (sh *strictHandler) PostUsersDeactivate(ctx echo.Context) error {
+	var request PostUsersDeactivateRequestObject
+
+	var body PostUsersDeactivateJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostUsersDeactivate(ctx.Request().Context(), request.(PostUsersDeactivateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostUsersDeactivate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostUsersDeactivateResponseObject); ok {
+		return validResponse.VisitPostUsersDeactivateResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
 }
 
 // GetUsersGetReview operation middleware

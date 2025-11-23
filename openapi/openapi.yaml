@@ -480,6 +480,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /users/deactivate:
+    post:
+      tags: [ Users ]
+      summary: Массово деактивировать пользователей команды и переназначить открытые PR
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ team_name, user_ids ]
+              properties:
+                team_name:
+                  type: string
+                user_ids:
+                  type: array
+                  items:
+                    type: string
+            example:
+              team_name: backend
+              user_ids: [ u2, u3, u5 ]
+      responses:
+        '200':
+          description: Результат деактивации и переназначения
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - team_name
+                  - deactivated_count
+                  - affected_pr_count
+                  - reassigned_reviewers_count
+                properties:
+                  team_name:
+                    type: string
+                  deactivated_count:
+                    type: integer
+                  affected_pr_count:
+                    type: integer
+                  reassigned_reviewers_count:
+                    type: integer
+        '404':
+          description: Команда не найдена
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
 
 
 

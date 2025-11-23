@@ -10,6 +10,7 @@ type UserService interface {
 	SetIsActive(isActive bool, id string) (*domain.User, error)
 	GetUserByID(id string) (domain.User, error)
 	GetPRsForReviewer(userID string) ([]domain.PullRequest, error)
+	DeactivateAndReassign(teamName string, userIDs []string) (*domain.DeactivateResult, error)
 }
 
 type userService struct {
@@ -38,8 +39,8 @@ func (us *userService) GetUserByID(id string) (domain.User, error) {
 	return us.repo.GetUserByID(id)
 }
 
-func (s *userService) GetPRsForReviewer(userID string) ([]domain.PullRequest, error) {
-	_, err := s.repo.GetUserByID(userID)
+func (us *userService) GetPRsForReviewer(userID string) ([]domain.PullRequest, error) {
+	_, err := us.repo.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("NOT_FOUND")
@@ -47,10 +48,14 @@ func (s *userService) GetPRsForReviewer(userID string) ([]domain.PullRequest, er
 		return nil, err
 	}
 
-	prs, err := s.repo.GetPRsForReviewer(userID)
+	prs, err := us.repo.GetPRsForReviewer(userID)
 	if err != nil {
 		return nil, err
 	}
 
 	return prs, nil
+}
+
+func (us *userService) DeactivateAndReassign(teamName string, userIDs []string) (*domain.DeactivateResult, error) {
+	return us.repo.DeactivateAndReassign(teamName, userIDs)
 }

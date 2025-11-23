@@ -21,7 +21,6 @@ func NewStatsRepository(db *gorm.DB) StatsRepository {
 	return &statsRepository{db: db}
 }
 
-// SELECT reviewer_id, COUNT(*) FROM pull_request_reviewers GROUP BY reviewer_id;
 func (r *statsRepository) CountAssignmentsByUser() ([]stats.AssignmentsByUserItem, error) {
 	var rows []stats.AssignmentsByUserItem
 
@@ -34,7 +33,6 @@ func (r *statsRepository) CountAssignmentsByUser() ([]stats.AssignmentsByUserIte
 	return rows, err
 }
 
-// SELECT pull_request_id, COUNT(*) FROM pull_request_reviewers GROUP BY pull_request_id;
 func (r *statsRepository) CountAssignmentsByPR() ([]stats.AssignmentsByPRItem, error) {
 	var rows []stats.AssignmentsByPRItem
 
@@ -47,7 +45,6 @@ func (r *statsRepository) CountAssignmentsByPR() ([]stats.AssignmentsByPRItem, e
 	return rows, err
 }
 
-// SELECT COUNT(*) FROM pull_requests WHERE status = 'OPEN';
 func (r *statsRepository) CountOpenPRs() (int, error) {
 	var count int64
 	err := r.db.Model(&domain.PullRequest{}).
@@ -56,7 +53,6 @@ func (r *statsRepository) CountOpenPRs() (int, error) {
 	return int(count), err
 }
 
-// SELECT COUNT(*) FROM pull_requests WHERE status = 'MERGED';
 func (r *statsRepository) CountMergedPRs() (int, error) {
 	var count int64
 	err := r.db.Model(&domain.PullRequest{}).

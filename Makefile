@@ -13,6 +13,9 @@ migrate-new-users:
 migrate-new-pullRequests:
 	migrate create -ext sql -dir ./migrations pullRequests
 
+migrate-add-indexes:
+	migrate create -ext sql -dir ./migrations add_indexes
+
 migrate:
 	$(MIGRATE) up
 
