@@ -33,5 +33,9 @@ gen-stats:
 
 gen: gen-teams gen-users gen-pullRequests gen-stats
 
+load-test:
+	go run loadtest/test.go -base-url=http://localhost:8080 -duration=30s -concurrency=10
+
+
 lint:
 	golangci-lint run --out-format=colored-line-number
