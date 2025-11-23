@@ -28,7 +28,10 @@ gen-users:
 gen-pullRequests:
 	oapi-codegen -config openapi/.openapi -include-tags PullRequests -package pullRequests openapi/openapi.yaml > ./internal/web/pullRequests/api.gen.go
 
-gen: gen-teams gen-users gen-pullRequests
+gen-stats:
+	oapi-codegen -config openapi/.openapi -include-tags Stats -package stats openapi/openapi.yaml > ./internal/web/stats/api.gen.go
+
+gen: gen-teams gen-users gen-pullRequests gen-stats
 
 lint:
-	golangci-lint run --color=always
+	golangci-lint run --out-format=colored-line-number

@@ -8,6 +8,7 @@ tags:
   - name: Users
   - name: PullRequests
   - name: Health
+  - name: Stats
 
 components:
   parameters:
@@ -26,6 +27,47 @@ components:
         type: string
       description: Идентификатор пользователя
   schemas:
+    StatsResponse:
+      type: object
+      properties:
+        assignments_by_user:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignmentsByUserItem'
+        assignments_by_pr:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignmentsByPRItem'
+        open_prs_count:
+          type: integer
+        merged_prs_count:
+          type: integer
+      required:
+        - assignments_by_user
+        - assignments_by_pr
+        - open_prs_count
+        - merged_prs_count
+    AssignmentsByUserItem:
+      type: object
+      properties:
+        user_id:
+          type: string
+        count:
+          type: integer
+      required:
+        - user_id
+        - count
+
+    AssignmentsByPRItem:
+      type: object
+      properties:
+          pull_request_id:
+            type: string
+          count:
+            type: integer
+      required:
+          - pull_request_id
+          - count
     ErrorResponse:
       type: object
       required: [error]
@@ -344,7 +386,7 @@ paths:
                 old_user_id: { type: string }
             example:
               pull_request_id: pr-1001
-              old_reviewer_id: u2
+              old_user_id: u2
       responses:
         '200':
           description: Переназначение выполнено
@@ -419,3 +461,23 @@ paths:
                     pull_request_name: Add search
                     author_id: u1
                     status: OPEN
+  /stats:
+    get:
+      tags:
+        - Stats
+      summary: Get statistics about pull requests and assignments
+      operationId: GetStats
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
